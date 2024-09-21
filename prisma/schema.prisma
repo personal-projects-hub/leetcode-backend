@@ -1,21 +1,117 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "postgresql" // Change to your database provider (e.g., mysql, sqlite)
   url      = env("DATABASE_URL")
 }
 
-
 model User {
-  id    Int     @id @default(autoincrement())
-  email String  @unique
-  name  String?
+  id             Int       @id @default(autoincrement())
+  username       String    @unique
+  email          String    @unique
+  password       String
+  bio            String?   // Optional bio for user profile
+  avatarUrl      String?   // Optional avatar URL
+  submissions    Submission[]
+  comments       Comment[]
+  favorites      Problem[] 
+  role           Role      @default(USER)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([username, email])
+}
+
+model Problem {
+  id          Int         @id @default(autoincrement())
+  title       String      @unique
+  description String      // Detailed problem description
+  difficulty  Difficulty  // Enum: EASY, MEDIUM, HARD
+  tags        TagsOnPosts[]       
+  submissions Submission[]
+  comments    Comment[]
+  createdBy   User        @relation(fields: [createdById], references: [id])
+  createdById Int
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model Submission {
+  id         Int       @id @default(autoincrement())
+  code       String    // The submitted code
+  language   Language  // Enum: PYTHON, JAVASCRIPT, JAVA, etc.
+  status     Status    // Enum: PENDING, ACCEPTED, REJECTED, etc.
+  runtime    Float?    // Runtime of the solution (optional)
+  memory     Float?    // Memory usage of the solution (optional)
+  user       User      @relation(fields: [userId], references: [id])
+  userId     Int
+  problem    Problem   @relation(fields: [problemId], references: [id])
+  problemId  Int
+  createdAt  DateTime  @default(now())
+}
+
+model Comment {
+  id         Int      @id @default(autoincrement())
+  content    String   // The comment text
+  user       User     @relation(fields: [userId], references: [id])
+  userId     Int
+  problem    Problem  @relation(fields: [problemId], references: [id])
+  problemId  Int
+  parentId   Int?     // For nested comments (optional)
+  createdAt  DateTime @default(now())
+}
+
+model Tag {
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
+  problems  TagsOnPosts[] 
+}
+
+model TagsOnPosts {
+  post       Problem      @relation(fields: [problemId], references: [id])
+  problemId     Int
+
+  tag        Tag       @relation(fields: [tagId], references: [id])
+  tagId     Int
+
+    @@id([problemId, tagId])
+
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum Language {
+  PYTHON
+  JAVASCRIPT
+  JAVA
+  CPP // C++
+  RUBY
+  GO
+  CSHARP // C#
+  SWIFT
+  KOTLIN
+  TYPESCRIPT
+  PHP
+}
+
+enum Status {
+  PENDING
+  ACCEPTED
+  REJECTED
+  TIME_LIMIT_EXCEEDED
+  MEMORY_LIMIT_EXCEEDED
+  RUNTIME_ERROR
+  COMPILE_ERROR
+}
+
+enum Role {
+  USER
+  ADMIN
+  
 }
