@@ -8,80 +8,69 @@ datasource db {
 }
 
 model User {
-  id             Int       @id @default(autoincrement())
-  username       String    @unique
-  email          String    @unique
-  password       String
-  bio            String?   // Optional bio for user profile
-  avatarUrl      String?   // Optional avatar URL
-  submissions    Submission[]
-  comments       Comment[]
-  favorites      Problem[] 
-  role           Role      @default(USER)
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  id          String       @id
+  username    String       @unique
+  email       String       @unique
+  password    String
+  bio         String? // Optional bio for user profile
+  avatarUrl   String? // Optional avatar URL
+  submissions Submission[]
+  comments    Comment[]
+  favorites   Problem[]
+  role        Role         @default(USER)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 
   @@index([username, email])
 }
 
 model Problem {
-  id          Int         @id @default(autoincrement())
-  title       String      @unique
-  description String      // Detailed problem description
-  difficulty  Difficulty  // Enum: EASY, MEDIUM, HARD
-  tags        TagsOnPosts[]       
+  id          String       @id
+  title       String       @unique
+  description String // Detailed problem description
+  difficulty  Difficulty // Enum: EASY, MEDIUM, HARD
+  tags        Tags[]
   submissions Submission[]
   comments    Comment[]
-  createdBy   User        @relation(fields: [createdById], references: [id])
-  createdById Int
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  createdBy   User         @relation(fields: [createdById], references: [id])
+  createdById String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 }
 
 model Submission {
-  id         Int       @id @default(autoincrement())
-  code       String    // The submitted code
-  language   Language  // Enum: PYTHON, JAVASCRIPT, JAVA, etc.
-  status     Status    // Enum: PENDING, ACCEPTED, REJECTED, etc.
-  runtime    Float?    // Runtime of the solution (optional)
-  memory     Float?    // Memory usage of the solution (optional)
-  user       User      @relation(fields: [userId], references: [id])
-  userId     Int
-  problem    Problem   @relation(fields: [problemId], references: [id])
-  problemId  Int
-  createdAt  DateTime  @default(now())
+  id        String   @id
+  code      String // The submitted code
+  language  Language // Enum: PYTHON, JAVASCRIPT, JAVA, etc.
+  status    Status // Enum: PENDING, ACCEPTED, REJECTED, etc.
+  runtime   Float? // Runtime of the solution (optional)
+  memory    Float? // Memory usage of the solution (optional)
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  problem   Problem  @relation(fields: [problemId], references: [id])
+  problemId String
+  createdAt DateTime @default(now())
 }
 
 model Comment {
-  id         Int      @id @default(autoincrement())
-  content    String   // The comment text
-  user       User     @relation(fields: [userId], references: [id])
-  userId     Int
-  problem    Problem  @relation(fields: [problemId], references: [id])
-  problemId  Int
-  parentId   Int?     // For nested comments (optional)
-  createdAt  DateTime @default(now())
-}
-
-model Tag {
-  id        Int       @id @default(autoincrement())
-  name      String    @unique
-  problems  TagsOnPosts[] 
-}
-
-model TagsOnPosts {
-  post       Problem      @relation(fields: [problemId], references: [id])
-  problemId     Int
-
-  tag        Tag       @relation(fields: [tagId], references: [id])
-  tagId     Int
-
-    @@id([problemId, tagId])
-
+  id        String   @id
+  content   String // The comment text
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  problem   Problem  @relation(fields: [problemId], references: [id])
+  problemId String
+  parentId  Int? // For nested comments (optional)
+  createdAt DateTime @default(now())
 }
 
 enum Difficulty {
   EASY
+  MEDIUM
+  HARD
+}
+
+enum Tags {
+  Array
   MEDIUM
   HARD
 }
@@ -113,5 +102,4 @@ enum Status {
 enum Role {
   USER
   ADMIN
-  
 }
